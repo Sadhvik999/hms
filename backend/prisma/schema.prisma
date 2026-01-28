@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+enum UserRole{
+  ADMIN
+  DOCTOR
+  RECEPTIONIST
+}
+enum Gender{
+  MALE
+  FEMALE
+  OTHER
+}
+enum AppointmentStatus{
+  SCHEDULED
+  COMPLETED 
+  CANCELLED
+}
+model User{
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(200)
+  email String @db.VarChar(300) @unique
+  password String @db.VarChar(255)
+  role UserRole
+  doctor Doctor?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Doctor{
+  id Int @id@default(autoincrement())
+  specialisation String @db.VarChar(200)
+  userId Int @unique
+  user User @relation(fields: [userId],references: [id])
+  departmentId Int 
+  department Department @relation(fields: [departmentId], references: [id])
+  appointments    Appointment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Patient{
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(200)
+  phone String @db.VarChar(20)
+  email String? @db.VarChar(300)
+  gender Gender
+  dateOfBirth DateTime 
+  appointments    Appointment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Department{
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(200)
+  doctors Doctor[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Appointment{
+  id Int @id @default(autoincrement())
+  doctorId Int @unique
+  doctor Doctor @relation(fields: [doctorId],references: [id])
+  patientId Int @unique
+  patient Patient @relation(fields: [patientId],references: [id])
+  appointmentDate DateTime 
+  status AppointmentStatus @default(SCHEDULED)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
